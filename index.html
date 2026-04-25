@@ -165,14 +165,24 @@
     background: var(--surface); border: 1px solid var(--winner-border);
     border-radius: 14px; padding: 22px 28px; margin-bottom: 40px;
   }
-  .winner-inner { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
-  .w-trophy { font-size: 44px; line-height: 1; }
-  .w-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 4px; }
-  .w-partner { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
-  .w-store { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
-  .w-price { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: var(--accent2); }
-  .w-savings { font-size: 11px; color: var(--accent); margin-top: 3px; font-family: 'DM Mono', monospace; }
   .w-empty { color: var(--muted); font-size: 13px; margin-top: 10px; font-family: 'DM Mono', monospace; }
+  .ranking-list { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+  .rank-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 16px; transition: background .12s;
+  }
+  .rank-item.first { background: var(--winner-bg); border-color: var(--winner-border); }
+  .rank-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); min-width: 22px; text-align: right; flex-shrink: 0; }
+  .rank-item.first .rank-num { color: var(--accent2); font-weight: 700; }
+  .rank-trophy { font-size: 15px; flex-shrink: 0; width: 18px; text-align: center; }
+  .rank-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; flex: 1; min-width: 0; }
+  .rank-name .r-sep { color: var(--muted); font-weight: 400; margin: 0 6px; font-family: 'DM Mono', monospace; font-size: 11px; }
+  .rank-name .r-store { font-weight: 400; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; }
+  .rank-price { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--accent2); flex-shrink: 0; }
+  .rank-item:not(.first) .rank-price { color: var(--muted); }
+  .rank-savings { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); flex-shrink: 0; min-width: 130px; text-align: right; }
+  .rank-item:not(.first) .rank-savings { color: transparent; }
 
   @media (max-width: 700px) {
     header, main { padding: 16px; }
@@ -515,33 +525,41 @@ function markWinner() {
 
 // ─── WINNER GERAL ────────────────────────────────────────────────────────────
 function renderWinner() {
-  let best = null, bestPrice = Infinity;
+  // Coleta todos os resultados com preço preenchido
+  const results = [];
   S.partners.forEach(partner => {
     S.stores.forEach(store => {
       const c = calc(partner, store);
-      if (c.preco && c.final < bestPrice) {
-        bestPrice = c.final;
-        best = { partner, store, price: c.final, orig: c.preco, savings: c.preco - c.final };
-      }
+      if (c.preco) results.push({ partner, store, price: c.final, orig: c.preco, savings: c.preco - c.final });
     });
   });
 
   const el = document.getElementById('winnerContent');
-  if (!best) {
-    el.innerHTML = '<div class="w-empty">Preencha os preços nas abas para ver o ganhador geral.</div>';
+  if (results.length === 0) {
+    el.innerHTML = '<div class="w-empty">Preencha os preços nas abas para ver o ranking geral.</div>';
     return;
   }
-  const col = pColor(best.partner);
-  el.innerHTML = `<div class="winner-inner">
-    <div class="w-trophy">🏆</div>
-    <div>
-      <div class="w-label">Melhor opção — todas as lojas e parceiros</div>
-      <div class="w-partner" style="color:${col}">${best.partner}</div>
-      <div class="w-store">${best.store}</div>
-      <div class="w-price">${fR(best.price)}</div>
-      <div class="w-savings">economia de ${fR(best.savings)} vs preço original de ${fR(best.orig)}</div>
-    </div>
-  </div>`;
+
+  // Ordena do menor para o maior preço final
+  results.sort((a, b) => a.price - b.price);
+
+  const items = results.map((r, i) => {
+    const col = pColor(r.partner);
+    const isFirst = i === 0;
+    return `<div class="rank-item${isFirst ? ' first' : ''}">
+      <div class="rank-num">${i + 1}º</div>
+      <div class="rank-trophy">${isFirst ? '🏆' : ''}</div>
+      <div class="rank-name">
+        <span class="r-partner" style="color:${col}">${r.partner}</span>
+        <span class="r-sep">—</span>
+        <span class="r-store">${r.store}</span>
+      </div>
+      <div class="rank-price">${fR(r.price)}</div>
+      <div class="rank-savings">${isFirst ? 'economia de ' + fR(r.savings) : ''}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="ranking-list">${items}</div>`;
 }
 
 function refresh() {
