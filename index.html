@@ -240,7 +240,7 @@ const PMETA = {
   'AZUL':             { color: '#1a6fba', type: 'milhas' },
   'LATAM':            { color: '#cc0033', type: 'milhas' },
   'SMILES':           { color: '#f07a20', type: 'milhas' },
-  'DIRETO':           { color: '#5a9a3a', type: 'milhas' },
+  'SEM PARCEIRO':     { color: '#666677', type: 'milhas' },
   'MELIUZ':           { color: '#ff5722', type: 'cashback' },
   'INTER':            { color: '#f97316', type: 'cashback' },
   'CUPONOMIA':        { color: '#8b5cf6', type: 'cashback' },
@@ -256,11 +256,11 @@ const S = {
   dolar: 5.00,
   pontosPorDolar: 5,
   cartaoRsMil: 30,
-  premissas: { LIVELO:30, ESFERA:30, AZUL:13, LATAM:23, SMILES:15, DIRETO:30 },
-  partners: ['LIVELO','ESFERA','AZUL','LATAM','SMILES','DIRETO',
+  premissas: { 'SEM PARCEIRO':0, LIVELO:30, ESFERA:30, AZUL:13, LATAM:23, SMILES:15 },
+  partners: ['SEM PARCEIRO','LIVELO','ESFERA','AZUL','LATAM','SMILES',
              'MELIUZ','INTER','CUPONOMIA','MY CASHBACK','TOP CASHBACK US','TOP CASHBACK UK'],
-  stores: ['Loja A','Loja B','Loja C','Loja D','Loja E'],
-  active: 'LIVELO',
+  stores: ['Loja 1','Loja 2','Loja 3','Loja 4','Loja 5'],
+  active: 'SEM PARCEIRO',
   data: {},
 };
 
@@ -282,7 +282,8 @@ function calc(partner, store) {
     const rsMil = S.premissas[partner] || 0;
     rbParceiro = preco * pts * (rsMil / 1000);
   } else {
-    rbParceiro = preco * pts;
+    // pts entered as whole number: 5 means 5% = 0.05
+    rbParceiro = preco * (pts / 100);
   }
 
   const apos = preco - rbParceiro;
@@ -323,6 +324,7 @@ function renderPremissas() {
   const r2 = document.getElementById('rowParceiros');
   r2.innerHTML = '';
   Object.entries(S.premissas).forEach(([p, val]) => {
+    if (p === 'SEM PARCEIRO') return; // sem benefício de parceiro, não precisa de premissa
     const col = pColor(p);
     const c = document.createElement('div');
     c.className = 'premissa-card partner-card';
@@ -358,7 +360,7 @@ function renderStores() {
   });
   const add = document.createElement('button');
   add.className = 'btn-ghost'; add.textContent = '+ Adicionar loja';
-  add.onclick = () => { S.stores.push(`Loja ${S.stores.length+1}`); refresh(); };
+  add.onclick = () => { S.stores.push(`Loja ${S.stores.length + 1}`); refresh(); };
   grid.appendChild(add);
   grid.querySelectorAll('.store-tag input').forEach(inp =>
     inp.addEventListener('change', e => { S.stores[+e.target.dataset.i] = e.target.value; renderTable(); renderWinner(); }));
@@ -424,7 +426,7 @@ function renderTable() {
   S.stores.forEach(store => {
     const c = calc(p, store);
     const d = getD(p, store);
-    const hint = type === 'milhas' ? 'pts/R$' : '0.05 = 5%';
+    const hint = type === 'milhas' ? 'pts/R$' : 'ex: 5 = 5%';
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
