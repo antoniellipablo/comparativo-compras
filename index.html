@@ -184,6 +184,63 @@
   .rank-savings { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); flex-shrink: 0; min-width: 130px; text-align: right; }
   .rank-item:not(.first) .rank-savings { color: transparent; }
 
+  /* ── IMPORT MODAL ── */
+  .import-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 16px; color: var(--muted);
+    font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer;
+    transition: all .2s;
+  }
+  .import-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .import-btn .icon { font-size: 14px; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 32px; width: 640px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+  .modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .modal-sub code {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px; font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--accent);
+  }
+  .modal textarea {
+    width: 100%; height: 200px; background: var(--input-bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px;
+    padding: 12px; outline: none; resize: vertical; line-height: 1.5;
+    transition: border-color .2s;
+  }
+  .modal textarea:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+  .btn-primary {
+    background: var(--accent); color: #0e0e10; border: none;
+    border-radius: 8px; padding: 9px 20px; font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-cancel {
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 20px; font-family: 'DM Mono', monospace;
+    font-size: 12px; cursor: pointer; transition: all .2s;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: #555; }
+  .import-feedback {
+    margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 11px; display: none;
+  }
+  .import-feedback.ok  { background: rgba(91,224,160,0.12); border: 1px solid var(--accent2); color: var(--accent2); }
+  .import-feedback.err { background: rgba(240,96,144,0.12); border: 1px solid var(--accent3); color: var(--accent3); }
+
   @media (max-width: 700px) {
     header, main { padding: 16px; }
     .premissas-row { flex-direction: column; }
@@ -197,7 +254,27 @@
     <div class="logo">Comparativo <span>Milhas & Cashback</span></div>
     <div class="subtitle">Compare o preço real após pontos e cashback em cada parceiro</div>
   </div>
+  <button class="import-btn" onclick="openImport()">
+    <span class="icon">⬇</span> Importar pesquisa do Claude
+  </button>
 </header>
+
+<!-- MODAL DE IMPORTAÇÃO -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeImportOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-title">Importar pesquisa do Claude no Chrome</div>
+    <div class="modal-sub">
+      Cole abaixo o bloco <code>IMPORTAR_APP</code> gerado pelo Claude no Chrome.<br>
+      O app vai preencher automaticamente os preços e pontuações nas abas corretas.
+    </div>
+    <textarea id="importInput" placeholder="Cole aqui o bloco IMPORTAR_APP gerado pelo Claude..."></textarea>
+    <div class="import-feedback" id="importFeedback"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeImport()">Cancelar</button>
+      <button class="btn-primary" onclick="runImport()">Importar</button>
+    </div>
+  </div>
+</div>
 
 <main>
 
@@ -568,6 +645,89 @@ function renderWinner() {
 
 function refresh() {
   renderStores(); renderTabs(); renderTable(); renderWinner();
+}
+
+// ─── IMPORT LOGIC ────────────────────────────────────────────────────────────
+function openImport() {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('importInput').value = '';
+  hideFeedback();
+}
+function closeImport() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function closeImportOnOverlay(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeImport();
+}
+function showFeedback(msg, type) {
+  const el = document.getElementById('importFeedback');
+  el.textContent = msg; el.className = 'import-feedback ' + type; el.style.display = 'block';
+}
+function hideFeedback() {
+  document.getElementById('importFeedback').style.display = 'none';
+}
+
+function runImport() {
+  const raw = document.getElementById('importInput').value.trim();
+  if (!raw) { showFeedback('Cole o bloco IMPORTAR_APP antes de importar.', 'err'); return; }
+
+  // Extract the IMPORTAR_APP block
+  const blockMatch = raw.match(/IMPORTAR_APP_INICIO([\s\S]*?)IMPORTAR_APP_FIM/);
+  const text = blockMatch ? blockMatch[1].trim() : raw;
+
+  const lines = text.split('
+').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  let imported = 0, errors = [];
+
+  lines.forEach(line => {
+    // Expected format: PARCEIRO | LOJA | PRECO | PTS_OU_PCT
+    const parts = line.split('|').map(p => p.trim());
+    if (parts.length < 4) { errors.push(`Linha ignorada: "${line}"`); return; }
+
+    const [parceiro, loja, precoRaw, ptsRaw] = parts;
+    const parceiroUp = parceiro.toUpperCase();
+
+    // Find matching partner (flexible match)
+    const matchedPartner = S.partners.find(p =>
+      p.toUpperCase() === parceiroUp ||
+      p.toUpperCase().includes(parceiroUp) ||
+      parceiroUp.includes(p.toUpperCase())
+    );
+    if (!matchedPartner) { errors.push(`Parceiro não encontrado: "${parceiro}"`); return; }
+
+    // Find or create store
+    const lojaClean = loja.trim();
+    if (!S.stores.includes(lojaClean)) {
+      S.stores.push(lojaClean);
+    }
+
+    // Parse price: remove R$, spaces, swap comma for dot
+    const preco = precoRaw.replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim();
+    // Parse pts: accept both decimal (1.5) and whole (5 meaning 5%)
+    const pts = ptsRaw.replace(',','.').replace('%','').trim();
+
+    const d = getD(matchedPartner, lojaClean);
+    d.preco = preco;
+    d.pts = pts;
+
+    imported++;
+  });
+
+  if (imported === 0) {
+    showFeedback('Nenhuma linha válida encontrada. Verifique o formato.', 'err');
+    return;
+  }
+
+  const msg = `✓ ${imported} linha(s) importada(s) com sucesso.` +
+    (errors.length ? ` ${errors.length} ignorada(s).` : '');
+  showFeedback(msg, 'ok');
+
+  renderStores();
+  renderTabs();
+  renderTable();
+  renderWinner();
+
+  setTimeout(() => closeImport(), 1800);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
