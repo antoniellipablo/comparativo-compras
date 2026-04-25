@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparativo de Compras — Milhas & Cashback</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #18181c;
+    --surface2: #212128;
+    --border: #2e2e38;
+    --accent: #f0c040;
+    --accent2: #5be0a0;
+    --accent3: #f06090;
+    --text: #e8e8f0;
+    --muted: #888898;
+    --winner-bg: rgba(91,224,160,0.12);
+    --winner-border: #5be0a0;
+    --input-bg: #1c1c24;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  /* ── LAYOUT ── */
+  main { padding: 32px 40px; max-width: 1400px; }
+
+  /* ── PREMISSAS ── */
+  .premissas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .premissa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .premissa-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+  }
+  .premissa-input {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+    padding: 6px 10px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .premissa-input:focus { border-color: var(--accent); }
+  .premissa-unit {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 7px 16px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: #0e0e10;
+    font-weight: 500;
+  }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* ── STORES CONFIG ── */
+  .stores-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+  .stores-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .store-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .store-tag input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    width: 80px;
+    outline: none;
+  }
+  .store-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+  }
+  .store-remove:hover { color: var(--accent3); }
+  .btn-add-store {
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-add-store:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── TABLE ── */
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead th {
+    background: var(--surface);
+    padding: 12px 14px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  thead th.input-col { color: var(--accent); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody tr.winner-row {
+    background: var(--winner-bg);
+  }
+  tbody tr.winner-row td { border-color: rgba(91,224,160,0.15); }
+  td {
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  td.partner-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 90px;
+  }
+  td.store-name {
+    color: var(--muted);
+    font-size: 11px;
+    min-width: 70px;
+  }
+  td.calc { color: var(--text); }
+  td.final-price { font-weight: 500; color: var(--accent2); }
+  td.winner-badge {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── INPUT CELLS ── */
+  .cell-input {
+    background: var(--input-bg);
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    width: 90px;
+    outline: none;
+    transition: border-color .2s;
+    -moz-appearance: textfield;
+  }
+  .cell-input:focus { border-color: var(--accent); background: #1a1a22; }
+  .cell-input::-webkit-inner-spin-button,
+  .cell-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .cell-input::placeholder { color: #444; }
+  .cell-input.cashback-only { width: 70px; }
+
+  /* ── WINNER SUMMARY ── */
+  .winner-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 40px;
+  }
+  .winner-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .winner-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .winner-card.highlight {
+    border-color: var(--winner-border);
+    background: var(--winner-bg);
+  }
+  .winner-card .w-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 6px;
+  }
+  .winner-card .w-partner {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 2px;
+  }
+  .winner-card .w-store {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 8px;
+  }
+  .winner-card .w-price {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent2);
+  }
+  .winner-card .w-savings {
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .crown { font-size: 20px; position: absolute; top: 12px; right: 14px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-hint {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty-hint .icon { font-size: 32px; margin-bottom: 12px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    header, main { padding: 20px; }
+    .premissas-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Comparativo <span>Milhas & Cashback</span></div>
+    <div class="subtitle">Compare o preço real após pontos e cashback em cada parceiro</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- PREMISSAS -->
+  <div class="section-title">Premissas</div>
+  <div class="premissas-grid" id="premissasGrid">
+    <!-- gerado por JS -->
+  </div>
+
+  <!-- LOJAS -->
+  <div class="stores-section">
+    <div class="section-title" style="margin-bottom:0">Lojas / Sites</div>
+    <div style="color:var(--muted);font-size:12px;margin-top:6px;">Personalize os nomes das lojas que você vai pesquisar</div>
+    <div class="stores-grid" id="storesGrid"></div>
+  </div>
+
+  <!-- TABS POR PARCEIRO -->
+  <div class="section-title">Parceiros</div>
+  <div class="tabs" id="tabs"></div>
+
+  <!-- TABELA -->
+  <div class="table-wrapper">
+    <table id="mainTable">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- GANHADORES -->
+  <div class="winner-summary" id="winnerSummary" style="display:none">
+    <div class="section-title" style="margin-bottom:0">🏆 Melhor opção por loja</div>
+    <div class="winner-cards" id="winnerCards"></div>
+  </div>
+
+</main>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const state = {
+  dolar: 5.00,
+  pontosPorDolar: 5,
+  premissas: {
+    LIVELO:  { rs_milheiro: 30, cashback_pct: 0.03 },
+    ESFERA:  { rs_milheiro: 30, cashback_pct: 0.03 },
+    AZUL:    { rs_milheiro: 13, cashback_pct: 0.013 },
+    LATAM:   { rs_milheiro: 23, cashback_pct: 0.023 },
+    SMILES:  { rs_milheiro: 15, cashback_pct: 0.015 },
+  },
+  cashbackParceiros: ['MELIUZ','INTER','CUPONOMIA','MY CASHBACK','TOP CASH US','TOP CASH UK'],
+  stores: ['Loja A','Loja B','Loja C','Loja D','Loja E'],
+  activePartner: 'LIVELO',
+  // data[parceiro][loja] = { preco, pontos_ou_pct }
+  data: {},
+};
+
+function getPartnerType(p) {
+  return state.cashbackParceiros.includes(p) ? 'cashback' : 'milhas';
+}
+
+// ─── RENDER PREMISSAS ─────────────────────────────────────────────────────────
+function renderPremissas() {
+  const grid = document.getElementById('premissasGrid');
+  grid.innerHTML = '';
+
+  // Dólar
+  grid.innerHTML += card('Cotação do Dólar', state.dolar, 'dolar', 'R$');
+  grid.innerHTML += card('Pontos por Dólar (Cartão)', state.pontosPorDolar, 'pontosPorDolar', 'pts/US$');
+
+  for (const [p, vals] of Object.entries(state.premissas)) {
+    grid.innerHTML += card(`${p} — R$/milheiro`, vals.rs_milheiro, `prem_${p}_rs`, 'R$/1000 pts');
+  }
+
+  grid.querySelectorAll('.premissa-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const key = e.target.dataset.key;
+      const val = parseFloat(e.target.value) || 0;
+      if (key === 'dolar') state.dolar = val;
+      else if (key === 'pontosPorDolar') state.pontosPorDolar = val;
+      else {
+        const [, partner] = key.replace('prem_', '').split('_');
+        const realKey = key.replace('prem_', '').replace('_rs', '').replace('_pct','');
+        const partner2 = key.replace('prem_', '').replace(/_rs$|_pct$/,'');
+        if (key.endsWith('_rs')) {
+          state.premissas[partner2].rs_milheiro = val;
+          state.premissas[partner2].cashback_pct = val / 1000;
+        }
+      }
+      renderTable();
+      renderWinner();
+    });
+  });
+}
+
+function card(label, value, key, unit) {
+  return `<div class="premissa-card">
+    <div class="premissa-label">${label}</div>
+    <input class="premissa-input" type="number" step="0.01" value="${value}" data-key="${key}">
+    <div class="premissa-unit">${unit}</div>
+  </div>`;
+}
+
+// ─── RENDER STORES ────────────────────────────────────────────────────────────
+function renderStores() {
+  const grid = document.getElementById('storesGrid');
+  grid.innerHTML = '';
+  state.stores.forEach((s, i) => {
+    const tag = document.createElement('div');
+    tag.className = 'store-tag';
+    tag.innerHTML = `<input type="text" value="${s}" data-index="${i}" maxlength="20">
+      <button class="store-remove" data-index="${i}" title="Remover">×</button>`;
+    grid.appendChild(tag);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn-add-store';
+  addBtn.textContent = '+ Adicionar loja';
+  addBtn.onclick = () => {
+    state.stores.push(`Loja ${String.fromCharCode(65 + state.stores.length)}`);
+    renderStores(); renderTabs(); renderTable(); renderWinner();
+  };
+  grid.appendChild(addBtn);
+
+  grid.querySelectorAll('.store-tag input').forEach(inp => {
+    inp.addEventListener('change', e => {
+      state.stores[e.target.dataset.index] = e.target.value;
+      renderTable(); renderWinner();
+    });
+  });
+  grid.querySelectorAll('.store-remove').forEach(btn => {
+    btn.onclick = e => {
+      state.stores.splice(parseInt(e.target.dataset.index), 1);
+      renderStores(); renderTabs(); renderTable(); renderWinner();
+    };
+  });
+}
+
+// ─── RENDER TABS ─────────────────────────────────────────────────────────────
+function getAllPartners() {
+  return [...Object.keys(state.premissas), ...state.cashbackParceiros];
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  getAllPartners().forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (p === state.activePartner ? ' active' : '');
+    btn.textContent = p;
+    btn.onclick = () => { state.activePartner = p; renderTabs(); renderTable(); };
+    tabs.appendChild(btn);
+  });
+}
+
+// ─── DATA HELPER ─────────────────────────────────────────────────────────────
+function getData(partner, store) {
+  if (!state.data[partner]) state.data[partner] = {};
+  if (!state.data[partner][store]) state.data[partner][store] = { preco: '', pts_pct: '' };
+  return state.data[partner][store];
+}
+
+// ─── CALCULATIONS ─────────────────────────────────────────────────────────────
+function calcRow(partner, store) {
+  const d = getData(partner, store);
+  const preco = parseFloat(d.preco) || 0;
+  const pts_pct = parseFloat(d.pts_pct) || 0;
+  const type = getPartnerType(partner);
+
+  if (type === 'milhas') {
+    const premissa = state.premissas[partner];
+    const cashback_por_ponto = premissa ? premissa.cashback_pct : 0;
+    const cashback_pct_total = pts_pct * cashback_por_ponto;
+    const rs_cashback = preco * cashback_pct_total;
+    const preco_final = preco - rs_cashback;
+
+    // Com cartão
+    const preco_dolar = preco / state.dolar;
+    const pontos_cartao = preco_dolar * state.pontosPorDolar;
+    const rs_cashback_cartao = pontos_cartao * (premissa ? premissa.cashback_pct / 1000 : 0);
+    const preco_final_cartao = preco_final - rs_cashback_cartao;
+
+    return {
+      preco, pts_pct,
+      cashback_por_ponto, cashback_pct_total, rs_cashback, preco_final,
+      preco_dolar, pontos_cartao, rs_cashback_cartao, preco_final_cartao,
+      type
+    };
+  } else {
+    // Cashback direto — pts_pct é o % cashback
+    const rs_cashback = preco * pts_pct;
+    const preco_final = preco - rs_cashback;
+
+    const preco_dolar = preco / state.dolar;
+    const pontos_cartao = preco_dolar * state.pontosPorDolar;
+    const premissa = state.premissas['LIVELO']; // usa LIVELO como proxy p/ cashback cartão
+    const rs_cashback_cartao = pontos_cartao * (premissa ? premissa.cashback_pct / 1000 : 0);
+    const preco_final_cartao = preco_final - rs_cashback_cartao;
+
+    return {
+      preco, pts_pct,
+      rs_cashback, preco_final,
+      preco_dolar, pontos_cartao, rs_cashback_cartao, preco_final_cartao,
+      type
+    };
+  }
+}
+
+function fmt(n, decimals = 2) {
+  if (!n && n !== 0) return '—';
+  return 'R$ ' + n.toFixed(decimals).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function fmtPts(n) {
+  if (!n && n !== 0) return '—';
+  return n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function fmtPct(n) { return (n * 100).toFixed(2).replace('.', ',') + '%'; }
+
+// ─── RENDER TABLE ─────────────────────────────────────────────────────────────
+function renderTable() {
+  const partner = state.activePartner;
+  const type = getPartnerType(partner);
+  const head = document.getElementById('tableHead');
+  const body = document.getElementById('tableBody');
+
+  // Cabeçalho
+  if (type === 'milhas') {
+    head.innerHTML = `<tr>
+      <th>Loja</th>
+      <th class="input-col">Preço (R$) ✎</th>
+      <th class="input-col">Pts/Real ✎</th>
+      <th>Cashback/Ponto</th>
+      <th>% Cashback</th>
+      <th>R$ Cashback</th>
+      <th>Preço Final</th>
+      <th>Preço US$</th>
+      <th>Pts Cartão</th>
+      <th>Cashback Cartão</th>
+      <th>Preço Final c/ Cartão</th>
+      <th></th>
+    </tr>`;
+  } else {
+    head.innerHTML = `<tr>
+      <th>Loja</th>
+      <th class="input-col">Preço (R$) ✎</th>
+      <th class="input-col">% Cashback ✎</th>
+      <th>R$ Cashback</th>
+      <th>Preço Final</th>
+      <th>Pts Cartão</th>
+      <th>Cashback Cartão</th>
+      <th>Preço Final c/ Cartão</th>
+      <th></th>
+    </tr>`;
+  }
+
+  // Linhas
+  body.innerHTML = '';
+  state.stores.forEach(store => {
+    const c = calcRow(partner, store);
+    const tr = document.createElement('tr');
+
+    if (type === 'milhas') {
+      tr.innerHTML = `
+        <td class="store-name">${store}</td>
+        <td><input class="cell-input" type="number" placeholder="0,00" step="0.01"
+            value="${c.preco || ''}" data-partner="${partner}" data-store="${store}" data-field="preco"></td>
+        <td><input class="cell-input" type="number" placeholder="ex: 2" step="0.01"
+            value="${c.pts_pct || ''}" data-partner="${partner}" data-store="${store}" data-field="pts_pct"></td>
+        <td class="calc">${c.preco ? fmtPct(c.cashback_por_ponto) : '—'}</td>
+        <td class="calc">${c.preco ? fmtPct(c.cashback_pct_total) : '—'}</td>
+        <td class="calc">${c.preco ? fmt(c.rs_cashback) : '—'}</td>
+        <td class="final-price">${c.preco ? fmt(c.preco_final) : '—'}</td>
+        <td class="calc">${c.preco ? 'US$ ' + (c.preco_dolar).toFixed(2).replace('.', ',') : '—'}</td>
+        <td class="calc">${c.preco ? fmtPts(c.pontos_cartao) : '—'}</td>
+        <td class="calc">${c.preco ? fmt(c.rs_cashback_cartao) : '—'}</td>
+        <td class="final-price">${c.preco ? fmt(c.preco_final_cartao) : '—'}</td>
+        <td class="winner-badge" data-winner="${partner}|${store}"></td>`;
+    } else {
+      tr.innerHTML = `
+        <td class="store-name">${store}</td>
+        <td><input class="cell-input" type="number" placeholder="0,00" step="0.01"
+            value="${c.preco || ''}" data-partner="${partner}" data-store="${store}" data-field="preco"></td>
+        <td><input class="cell-input cashback-only" type="number" placeholder="ex: 0.05" step="0.001"
+            value="${c.pts_pct || ''}" data-partner="${partner}" data-store="${store}" data-field="pts_pct"></td>
+        <td class="calc">${c.preco ? fmt(c.rs_cashback) : '—'}</td>
+        <td class="final-price">${c.preco ? fmt(c.preco_final) : '—'}</td>
+        <td class="calc">${c.preco ? fmtPts(c.pontos_cartao) : '—'}</td>
+        <td class="calc">${c.preco ? fmt(c.rs_cashback_cartao) : '—'}</td>
+        <td class="final-price">${c.preco ? fmt(c.preco_final_cartao) : '—'}</td>
+        <td class="winner-badge" data-winner="${partner}|${store}"></td>`;
+    }
+
+    body.appendChild(tr);
+  });
+
+  // Eventos de input
+  body.querySelectorAll('.cell-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const { partner, store, field } = e.target.dataset;
+      getData(partner, store)[field] = e.target.value;
+      renderTable();
+      renderWinner();
+    });
+  });
+
+  markWinnerRows();
+}
+
+// ─── WINNER LOGIC ─────────────────────────────────────────────────────────────
+function renderWinner() {
+  const allPartners = getAllPartners();
+  const summary = document.getElementById('winnerSummary');
+  const cards = document.getElementById('winnerCards');
+  cards.innerHTML = '';
+
+  let hasAny = false;
+
+  state.stores.forEach(store => {
+    let best = null;
+    let bestPrice = Infinity;
+
+    allPartners.forEach(partner => {
+      const c = calcRow(partner, store);
+      if (!c.preco) return;
+      hasAny = true;
+      const finalP = c.preco_final_cartao;
+      if (finalP < bestPrice) {
+        bestPrice = finalP;
+        best = { partner, store, price: finalP, savings: c.preco - finalP };
+      }
+    });
+
+    if (best) {
+      const card = document.createElement('div');
+      card.className = 'winner-card highlight';
+      card.innerHTML = `<div class="crown">🏆</div>
+        <div class="w-label">Melhor para ${best.store}</div>
+        <div class="w-partner">${best.partner}</div>
+        <div class="w-store">${best.store}</div>
+        <div class="w-price">${fmt(best.price)}</div>
+        <div class="w-savings">Economia de ${fmt(best.savings)}</div>`;
+      cards.appendChild(card);
+    }
+  });
+
+  summary.style.display = hasAny ? 'block' : 'none';
+  markWinnerRows();
+}
+
+function markWinnerRows() {
+  // Determina melhor preço final por loja entre todos os parceiros
+  const bestByStore = {};
+  state.stores.forEach(store => {
+    let best = Infinity;
+    getAllPartners().forEach(partner => {
+      const c = calcRow(partner, store);
+      if (c.preco && c.preco_final_cartao < best) best = c.preco_final_cartao;
+    });
+    bestByStore[store] = best;
+  });
+
+  // Marca na tabela atual
+  document.querySelectorAll('[data-winner]').forEach(cell => {
+    const [partner, store] = cell.dataset.winner.split('|');
+    const c = calcRow(partner, store);
+    const tr = cell.closest('tr');
+    if (c.preco && Math.abs(c.preco_final_cartao - bestByStore[store]) < 0.01) {
+      tr.classList.add('winner-row');
+      cell.textContent = '★ Melhor';
+    } else {
+      tr.classList.remove('winner-row');
+      cell.textContent = '';
+    }
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderPremissas();
+renderStores();
+renderTabs();
+renderTable();
+</script>
+</body>
+</html>
