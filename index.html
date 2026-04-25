@@ -543,6 +543,10 @@ function renderWinner() {
   // Ordena do menor para o maior preço final
   results.sort((a, b) => a.price - b.price);
 
+  const avg = results.reduce((sum, r) => sum + r.price, 0) / results.length;
+  const winner = results[0];
+  const econVsMedia = avg - winner.price;
+
   const items = results.map((r, i) => {
     const col = pColor(r.partner);
     const isFirst = i === 0;
@@ -555,7 +559,7 @@ function renderWinner() {
         <span class="r-store">${r.store}</span>
       </div>
       <div class="rank-price">${fR(r.price)}</div>
-      <div class="rank-savings">${isFirst ? 'economia de ' + fR(r.savings) : ''}</div>
+      <div class="rank-savings">${isFirst && results.length > 1 ? fR(econVsMedia) + ' abaixo da média (' + fR(avg) + ')' : ''}</div>
     </div>`;
   }).join('');
 
