@@ -675,8 +675,7 @@ function runImport() {
   const blockMatch = raw.match(/IMPORTAR_APP_INICIO([\s\S]*?)IMPORTAR_APP_FIM/);
   const text = blockMatch ? blockMatch[1].trim() : raw;
 
-  const lines = text.split('
-').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
   let imported = 0, errors = [];
 
   lines.forEach(line => {
@@ -702,7 +701,7 @@ function runImport() {
     }
 
     // Parse price: remove R$, spaces, swap comma for dot
-    const preco = precoRaw.replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim();
+    const preco = precoRaw.replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.').trim();
     // Parse pts: accept both decimal (1.5) and whole (5 meaning 5%)
     const pts = ptsRaw.replace(',','.').replace('%','').trim();
 
@@ -718,8 +717,8 @@ function runImport() {
     return;
   }
 
-  const msg = `✓ ${imported} linha(s) importada(s) com sucesso.` +
-    (errors.length ? ` ${errors.length} ignorada(s).` : '');
+  const msg = '✓ ' + imported + ' linha(s) importada(s) com sucesso.' +
+    (errors.length ? ' ' + errors.length + ' ignorada(s).' : '');
   showFeedback(msg, 'ok');
 
   renderStores();
